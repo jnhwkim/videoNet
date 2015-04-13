@@ -55,6 +55,19 @@ const string MediaReader::get_subtitles() {
     return subtitlesfile;
 }
 
+static const Vec3b bcolors[] =
+{
+    Vec3b(0,0,255),
+    Vec3b(0,128,255),
+    Vec3b(0,255,255),
+    Vec3b(0,255,0),
+    Vec3b(255,128,0),
+    Vec3b(255,255,0),
+    Vec3b(255,0,0),
+    Vec3b(255,0,255),
+    Vec3b(255,255,255)
+};
+
 int main(int, char**)
 {  
     const string mediafile ("/Users/Calvin/Documents/Projects/Pororo/Movies/pororo_3_1.avi");
@@ -71,13 +84,34 @@ int main(int, char**)
         Subtitle subtitle = pororo.getSubtitle(idx);
         pororo.getFrame(subtitle.time, frame);
 
+        // MSER
+        vector<vector<Point> > contours;
+        double t = (double)getTickCount();
+        MSER()(frame, contours);
+        t = (double)getTickCount() - t;
+        printf( "MSER extracted %d contours in %g ms.\n", (int)contours.size(),
+               t*1000./getTickFrequency() );
+
+        // draw mser's with different colors
+        for( int i = (int)contours.size()-1; i >= 0; i-- )
+        {
+            const vector<Point>& r = contours[i];
+            for ( int j = 0; j < (int)r.size(); j++ )
+            {
+                cout << r.size() << endl;
+                Point pt = r[j];
+                frame.at<Vec3b>(pt) = bcolors[i%9];
+            }
+        }
+
+        // print subtitles info
         cout << subtitle.time << "\t" << subtitle.text << endl;
 
-        cvtColor(frame, edges, CV_BGR2GRAY);
-        GaussianBlur(edges, edges, Size(7,7), 1.5, 1.5);
-        Canny(edges, edges, 0, 30, 3);
+        //cvtColor(frame, edges, CV_BGR2GRAY);
+        GaussianBlur(frame, edges, Size(7,7), 1.5, 1.5);
+        //Canny(edges, edges, 0, 30, 3);
         imshow("edges", edges);
-        waitKey(300);
+        waitKey(0);
     }
 
     return 0;

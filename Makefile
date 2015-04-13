@@ -121,7 +121,7 @@ UBUNTU = $(shell lsb_release -i -s 2>/dev/null | grep -i ubuntu)
 # OpenGL specific libraries
 ifeq ($(TARGET_OS),darwin)
  # Mac OSX specific libraries and paths to include
- LIBRARIES +=-lopencv_core -lopencv_highgui -lopencv_imgproc -lboost_regex
+ LIBRARIES +=-lopencv_core -lopencv_highgui -lopencv_imgproc -lopencv_features2d -lboost_regex
 else
  LIBRARIES += 
 endif
