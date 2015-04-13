@@ -111,7 +111,7 @@ ALL_LDFLAGS += $(addprefix -Xlinker ,$(LDFLAGS))
 ALL_LDFLAGS += $(addprefix -Xlinker ,$(EXTRA_LDFLAGS))
 
 # Common includes and paths for CUDA
-INCLUDES  := -I../../common/inc 
+INCLUDES  := -I../../common/inc
 LIBRARIES := 
 
 ################################################################################
@@ -121,7 +121,7 @@ UBUNTU = $(shell lsb_release -i -s 2>/dev/null | grep -i ubuntu)
 # OpenGL specific libraries
 ifeq ($(TARGET_OS),darwin)
  # Mac OSX specific libraries and paths to include
- LIBRARIES +=-lopencv_core -lopencv_highgui -lopencv_imgproc
+ LIBRARIES +=-lopencv_core -lopencv_highgui -lopencv_imgproc -lboost_regex
 else
  LIBRARIES += 
 endif
@@ -229,7 +229,10 @@ $(PTX_FILE): NV12ToARGB_drvapi.cu
 MediaReader.o: MediaReader.cpp
 	$(EXEC) $(NVCC) $(INCLUDES) $(ALL_CCFLAGS) $(GENCODE_FLAGS) -o $@ -c $<
 
-videoNet: MediaReader.o
+SubtitleReader.o: SubtitleReader.cpp
+	$(EXEC) $(NVCC) $(INCLUDES) $(ALL_CCFLAGS) $(GENCODE_FLAGS) -o $@ -c $<
+
+videoNet: SubtitleReader.o MediaReader.o
 	$(EXEC) $(NVCC) $(ALL_LDFLAGS) $(GENCODE_FLAGS) -o $@ $+ $(LIBRARIES)
 	$(EXEC) mkdir -p ./bin/$(TARGET_ARCH)/$(TARGET_OS)/$(BUILD_TYPE)
 	$(EXEC) cp $@ ./bin/$(TARGET_ARCH)/$(TARGET_OS)/$(BUILD_TYPE)
@@ -238,7 +241,7 @@ run: build
 	$(EXEC) ./videoNet
 
 clean:
-	rm -f videoNet MediaReader.o  data/$(PTX_FILE) $(PTX_FILE)
+	rm -f videoNet SubtitleReader.o MediaReader.o  data/$(PTX_FILE) $(PTX_FILE)
 	rm -rf ./bin/$(TARGET_ARCH)/$(TARGET_OS)/$(BUILD_TYPE)/videoNet
 	rm -rf ./bin/$(TARGET_ARCH)/$(TARGET_OS)/$(BUILD_TYPE)/$(PTX_FILE)
 
