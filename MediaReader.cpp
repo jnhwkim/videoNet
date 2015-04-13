@@ -1,16 +1,28 @@
-#include "opencv2/opencv.hpp"
+#include "MediaReader.hpp"
 
 using namespace cv;
+
+MediaReader::MediaReader(const cv::string& filename) {
+    this->_init(filename);
+}
+void MediaReader::_init(const cv::string& filename) {
+    this->_cap = VideoCapture(filename);
+    if(!this->_cap.isOpened())  // check if we succeeded
+        exit(1);
+}
+VideoCapture& MediaReader::operator>>(cv::Mat& image) {
+    this->_cap >> image;
+    return this->_cap;
+}
 
 int main(int, char**)
 {  
     const char *filename = "/Users/Calvin/Documents/Projects/Pororo/Movies/pororo_3_1.avi";
-    VideoCapture cap(filename); // open the default camera
-    if(!cap.isOpened())  // check if we succeeded
-        return -1;
 
-    double count = cap.get(CV_CAP_PROP_FRAME_COUNT); //get the frame count
-    cap.set(CV_CAP_PROP_POS_FRAMES,count-10000); //Set index to last frame
+    MediaReader pororo = MediaReader(filename);
+
+    //double count = cap.get(CV_CAP_PROP_FRAME_COUNT); //get the frame count
+    //cap.set(CV_CAP_PROP_POS_FRAMES,count-10000); //Set index to last frame
 
     Mat edges;
     namedWindow("edges",1);
@@ -18,7 +30,7 @@ int main(int, char**)
     {
         Mat frame;
 
-        cap >> frame; // get a new frame from camera
+        pororo >> frame; // get a new frame from camera
     
         cvtColor(frame, edges, CV_BGR2GRAY);
         GaussianBlur(edges, edges, Size(7,7), 1.5, 1.5);
