@@ -26,18 +26,21 @@ private:
 	// hyperedge weight vector
 	float* _w;   // size M
 	int _find(HEdge& edge, int idx);
+	void _update_weight(HE_WEIGHT_UPDATE RULE, int idx, float weight);
 public:
 	int M; // # of hyperedges
 	int N; // # of vertices
 	int nz; // # of connections
 	HEdge();
 	~HEdge();
-	HEdge(int* i, int* j, bool* val);
-	void get_edge(int idx, int* j_ptr, bool* val_ptr) const;
+	HEdge(int M, int N, int nz, int* i, int* j, bool* val);
+	HEdge(int M, int N, int nz, int* i, int* j, bool* val, float* w);
+	void get_edge(int idx, int** j_ptr, bool** val_ptr, int* order) const;
 	int get_edge_order(int idx) const;
 	float get_weight(int idx) const;
-	void update_weight(int idx, float weight);
-	void merge(HEdge& edge);
+	void merge(HE_WEIGHT_UPDATE RULE, HEdge& edge);
+	int get_num_vertices() const;
+	void print() const;
 };
 
 #endif /* HEdge_H_ */
