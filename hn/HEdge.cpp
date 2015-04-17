@@ -79,6 +79,9 @@ void HEdge::_update_weight(HE_WEIGHT_UPDATE RULE, int idx, float weight) {
 	case HE_WEIGHT_UPDATE_REPLACE:
 		this->_w[idx] = weight;
 		break;
+	case HE_WEIGHT_UPDATE_DECAY:
+		this->_w[idx] *= DECAY_FACTOR;
+		this->_w[idx] += weight;
 	}
 }
 

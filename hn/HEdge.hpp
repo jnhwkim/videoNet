@@ -10,11 +10,13 @@
  * f : activation function
  **/
 
-#define NOT_FOUND -1
+#define NOT_FOUND 		-1
+#define DECAY_FACTOR 	0.9
 
 enum HE_WEIGHT_UPDATE {
  	HE_WEIGHT_UPDATE_ADD,
  	HE_WEIGHT_UPDATE_REPLACE,
+ 	HE_WEIGHT_UPDATE_DECAY,
 };
 
 class HEdge {
