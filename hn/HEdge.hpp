@@ -9,19 +9,35 @@
  * a : activations of the upper hyperedges
  * f : activation function
  **/
+
+#define NOT_FOUND -1
+
+enum HE_WEIGHT_UPDATE {
+ 	HE_WEIGHT_UPDATE_ADD,
+ 	HE_WEIGHT_UPDATE_REPLACE,
+};
+
 class HEdge {
 private:
 	// CRS formatted sparse matrix H
-	unsigned* _i;		// size N + 1
-	unsigned* _j;		// size nz 
-	bool* 	  _val; // size nz
+	int* _i;		// size M + 1
+	int* _j;		// size nz 
+	bool* _val; // size nz
 	// hyperedge weight vector
-	float* 	  _w;   // size N
-	unsigned  _nz;
+	float* _w;   // size M
+	int _find(HEdge& edge, int idx);
 public:
-	unsigned M, N;
-	HEdge(unsigned* i, unsigned* j, bool* val);
-	void merge(HEdge& hedge);
+	int M; // # of hyperedges
+	int N; // # of vertices
+	int nz; // # of connections
+	HEdge();
+	~HEdge();
+	HEdge(int* i, int* j, bool* val);
+	void get_edge(int idx, int* j_ptr, bool* val_ptr) const;
+	int get_edge_order(int idx) const;
+	float get_weight(int idx) const;
+	void update_weight(int idx, float weight);
+	void merge(HEdge& edge);
 };
 
 #endif /* HEdge_H_ */
