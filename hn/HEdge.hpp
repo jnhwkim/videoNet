@@ -2,6 +2,7 @@
 #define HEdge_H_
 
 #include "../index/WordDic.hpp"
+#include "../index/FeatDic.hpp"
 
 /**
  * f(H W x) = a
@@ -14,8 +15,8 @@
 
 #define NOT_FOUND 		-1
 #define DECAY_FACTOR 	0.9
-
-typedef boost::unordered_map<std::string, int> map;
+#define EDGE_BUFFER		100
+#define MAX_ORDER			8
 
 enum HE_WEIGHT_UPDATE {
  	HE_WEIGHT_UPDATE_ADD,
@@ -27,7 +28,7 @@ enum HE_SAMPLING {
 	HE_SAMPLING_RANDOM,
 	HE_SAMPLING_GREEDY,
 	HE_SAMPLING_SERENDIPITY,
-}
+};
 
 class HEdge {
 private:
@@ -36,25 +37,36 @@ private:
 	int* _j;		// size nz 
 	bool* _val; // size nz
 	float* _w;	// size M, hyperedge weight vector
-	map _map;		// modal mapper i.e. 'w' + word id -> vertex id
+	// edge buffer
+	int* _i_b;		// size `EDGE_BUFFER` + 1
+	int* _j_b;		// size `EDGE_BUFFER` x `MAX_ORDER`
+	bool* _val_b; // size `EDGE_BUFFER` x `MAX_ORDER`
+	float* _w_b;  // size `EDGE_BUFFER`
+	int _count_b; // buffer count
 	int _find(HEdge& edge, int idx);
 	void _update_weight(HE_WEIGHT_UPDATE RULE, int idx, float weight);
 public:
 	int M; // # of hyperedges
-	int N; // # of vertices
 	int nz; // # of connections
 	HEdge();
 	~HEdge();
-	HEdge(int M, int N, int nz, int* i, int* j, bool* val);
-	HEdge(int M, int N, int nz, int* i, int* j, bool* val, float* w);
+	HEdge(int M, int nz, int* i, int* j, bool* val);
+	HEdge(int M, int nz, int* i, int* j, bool* val, float* w);
+	void init();
+	void init(int M, int nz, int* i, int* j, bool* val);
 	void get_edge(int idx, int** j_ptr, bool** val_ptr, int* order) const;
 	int get_edge_order(int idx) const;
 	float get_weight(int idx) const;
 	void merge(HE_WEIGHT_UPDATE RULE, HEdge& edge);
-	int get_num_vertices() const;
+	int N() const; // N, # of vertices
+	void init_buffer();
+	void clear_buffer();
+	void flush(HE_WEIGHT_UPDATE RULE);
 	void print() const;
 
 	// various sampler
+	#define VERTEX_WORD 0
+	#define VERTEX_FEAT	100000000
 	void sample_edge(HE_SAMPLING METHOD, int order, 
 		WordDic& dic, WordDic& alldic);
 	void sample_edge(HE_SAMPLING METHOD, int order, 

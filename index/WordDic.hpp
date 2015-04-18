@@ -9,16 +9,16 @@ struct WordInfo {
 	int id, tf, df;
 };
 
-typedef boost::unordered_map<std::string, WordInfo> map;
+typedef boost::unordered_map<std::string, WordInfo> word_map;
 
 class WordDic {
 private:
-	map _dic;
+	word_map _dic;
 public:
 	WordDic();
 	~WordDic();
-	map::const_iterator begin();
-	map::const_iterator end();
+	word_map::const_iterator begin();
+	word_map::const_iterator end();
 	WordInfo* get(std::string const& word);
 	WordInfo* get(std::string const& word, int tf, int df);
 	void parse(std::string const& document);
