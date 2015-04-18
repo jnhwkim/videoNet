@@ -168,6 +168,18 @@ void HEdge::print() const {
 	printf("\n");
 }
 
+// make sure that alldic includes dic.
+void WordDic::sample_edge(HE_SAMPLING METHOD, int order, WordDic& dic, WordDic& alldic) {
+	// sample words from `dic` using `METHOD`
+	// get word id from `alldic`
+	// get vertex id from modal mapper
+}
+
+// make sure that alldic includes dic.
+void WordDic::sample_edge(HE_SAMPLING METHOD, int order, FeatDic& dic, FeatDic& alldic) {
+	// TODO
+}
+
 int main(int argc, char** arg) {
 	// HN1
 	int M = 3;
