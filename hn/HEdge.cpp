@@ -29,6 +29,7 @@ HEdge::HEdge(int M, int N, int nz, int* i, int* j, bool* val, float* w) {
 	this->_w = w;
 }
 
+// find the same edge from this for a given hyperedge idx.
 int HEdge::_find(HEdge& edge, int idx) {
 	int* target_j_ptr;
 	bool* target_val_ptr;

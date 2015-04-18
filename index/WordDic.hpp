@@ -3,13 +3,29 @@
 
 #include <boost/unordered_map.hpp>
 
+#define WORD_SEPARATOR	" -;|!."
+
+struct WordInfo {
+	int id, tf, df;
+};
+
+typedef boost::unordered_map<std::string, WordInfo> map;
+
 class WordDic {
 private:
-	boost::unordered_map<std::string, int> _dic;
+	map _dic;
 public:
 	WordDic();
 	~WordDic();
-	int get(std::string const& word);
+	map::const_iterator begin();
+	map::const_iterator end();
+	WordInfo* get(std::string const& word);
+	WordInfo* get(std::string const& word, int tf, int df);
+	void parse(std::string const& document);
+	void merge(WordDic& dic);
+	int size() const;
+	void clear();
+	void print() const;
 };
 
 #endif /* WORD_DIC_H_ */
