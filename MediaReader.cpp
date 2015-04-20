@@ -26,18 +26,18 @@ VideoCapture& MediaReader::operator>>(cv::Mat& image) {
     return this->_cap;
 }
 
-void MediaReader::getFrame(int time, cv::Mat& image) {
+void MediaReader::get_frame(int time, cv::Mat& image) {
     double fps = this->_cap.get(CV_CAP_PROP_FPS);
     double frame = floor(time * fps / 1000) - 2; // align with previous setting
     this->_cap.set(CV_CAP_PROP_POS_FRAMES, frame);
     this->_cap >> (Mat&) image;
 }
 
-const Subtitle& MediaReader::getSubtitle(int idx) const {
+const Subtitle& MediaReader::get_subtitle(int idx) const {
     return this->_subtitleReader->get(idx);
 }
 
-int MediaReader::getSubtitleCount() const {
+int MediaReader::get_subtitle_count() const {
     return this->_subtitleReader->count();
 }
 
@@ -58,6 +58,64 @@ const string MediaReader::get_subtitles() {
     return subtitlesfile;
 }
 
+// sample to find k-mean descriptors
+void MediaReader::get_kmean_descriptor(
+    DetectorType TYPE, int K, int samples_per_frame, Mat& centroids) {
+    
+    int idx_limit = 100; //this->get_subtitle_count();
+    int** selected_idx = (int **) malloc(sizeof(int*));
+    *selected_idx = (int *) malloc(sizeof(int) * samples_per_frame);
+    Mat samples, labels;
+
+    printf("Sampling %d descriptors for each frame ...\n", samples_per_frame);
+    for(int idx = 0; idx < idx_limit; ++idx)
+    {
+        printf("."); if (0 == (idx + 1) % 20) printf(" (%d/%d)\n", idx + 1, idx_limit);
+        cout.flush();
+
+        Mat frame, resized, descriptors;
+        std::vector<cv::KeyPoint> keypoints;
+
+        Subtitle subtitle = this->get_subtitle(idx);
+        this->get_frame(subtitle.time, frame);
+        cv::resize(frame, resized, Size(), 0.25, 0.25, INTER_CUBIC);
+
+        switch(TYPE) {
+        case TYPE_SIFT:
+            cv::SiftFeatureDetector detector;
+            detector.detect(resized, keypoints);
+
+            SiftDescriptorExtractor extractor;
+            extractor.compute(resized, keypoints, descriptors);
+        }
+
+        int k1 = min(samples_per_frame, descriptors.size().height);
+        
+        assert(descriptors.size().height >= k1);
+        util::randsample(descriptors.size().height, k1, selected_idx, idx);
+        for (int i = 0; i < k1; i++) {
+            cout << *(*selected_idx + i) << "\t";
+        }
+        cout << endl;
+
+        for (int j = 0; j < k1; j++) {
+            if (0 == j && 0 == idx) {
+                samples = Mat(idx_limit * k1, descriptors.size().width, descriptors.type());
+            }
+            // Matrix `descriptors` will be destroyed after retruning.
+            descriptors.row(*(*selected_idx + j)).copyTo(samples.row(idx*k1+j));
+        }
+    }
+    printf("$\n");
+    namedWindow("samples",9);
+    imshow("samples", samples);
+
+    printf("K-means clustering ...\n");
+    kmeans(samples, K, labels, TermCriteria(CV_TERMCRIT_EPS+CV_TERMCRIT_ITER, 10, 1.0), 3, KMEANS_PP_CENTERS, centroids);
+    free(*selected_idx);
+    free(selected_idx);
+}
+
 static const Vec3b bcolors[] =
 {
     Vec3b(0,0,255),
@@ -76,71 +134,21 @@ int main(int, char**)
     const string mediafile ("/Users/Calvin/Documents/Projects/Pororo/Movies/pororo_3_1.avi");
 
     MediaReader pororo = MediaReader(mediafile);
-    int count = pororo.getSubtitleCount();
+    int count = pororo.get_subtitle_count();
 
-    // sample to find k-mean descriptors
-    int k = 10;
-    int K = 1000;
-    Mat samples;
-    int TEST_SIZE = 20;
-    int** selected_idx = (int **) malloc(sizeof(int*));
-    *selected_idx = (int *) malloc(sizeof(int) * k);
-
-    for(int idx = 0; idx < TEST_SIZE; idx++)
-    {
-        Mat frame;
-        cout << "$1-" << idx << endl;
-
-        Subtitle subtitle = pororo.getSubtitle(idx);
-        cout << "$2" << endl;
-        pororo.getFrame(subtitle.time, frame);
-
-        Mat resized;
-        cv::resize(frame, resized, Size(), 0.25, 0.25, INTER_CUBIC);
-        cout << "$3" << endl;
-
-        // sift 
-        cv::SiftFeatureDetector detector;
-        std::vector<cv::KeyPoint> keypoints;
-        detector.detect(resized, keypoints);
-
-        cout << "keypoints= " << keypoints.size() << endl;
-
-        // extract descriptors
-        SiftDescriptorExtractor extractor;
-        Mat descriptors;
-        extractor.compute(resized, keypoints, descriptors);
-
-        cout << "descriptors= " << descriptors.size().height << endl;        
-        
-        int k1 = min(k, descriptors.size().height);
-        
-        assert(descriptors.size().height >= k1);
-        util::randsample(descriptors.size().height, k1, selected_idx, idx);
-
-        for (int j = 0; j < k1; j++) {
-            if (0 == j && 0 == idx) {
-                cout << "Mat " << K << " " << descriptors.size().width << " " << endl;
-                samples = Mat(TEST_SIZE * k, descriptors.size().width, descriptors.type());
-            }
-            cout << "sample # " << idx*k+j << "/" << samples.size().height << endl;
-            //cout << *(*selected_idx + j) << "/" << descriptors.size().height << endl;
-            samples.row(idx*k+j) = descriptors.row(*(*selected_idx + j));
-        }
-
-        // Add results to image and save.
-        //cv::Mat output;
-        //cv::drawKeypoints(frame, keypoints, edges);
-    }
+    int K = 100;
+    int samples_per_frame = 10;
+    Mat centroids;
+    pororo.get_kmean_descriptor(TYPE_SIFT, K, samples_per_frame, centroids);
 
     for (int i = 0; i < 10; i++) {
         for (int j = 0; j < 10; j++) {
-            cout << samples.at<double>(i,j) << "\t";
+            cout << centroids.at<double>(i,j) << "\t";
         }
         cout << endl;
     }
 
-    imshow("edges", samples);
+    imshow("edges", centroids);
     waitKey(0);
 
     Mat edges;
@@ -149,8 +157,8 @@ int main(int, char**)
     {
         Mat frame;
         
-        Subtitle subtitle = pororo.getSubtitle(idx);
-        pororo.getFrame(subtitle.time, frame);
+        Subtitle subtitle = pororo.get_subtitle(idx);
+        pororo.get_frame(subtitle.time, frame);
 
         // MSER
         // vector<vector<Point> > contours;
