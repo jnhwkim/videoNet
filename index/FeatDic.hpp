@@ -3,6 +3,7 @@
 
 class FeatDic {
 private:
+	
 public:
 	FeatDic();
 	~FeatDic();
