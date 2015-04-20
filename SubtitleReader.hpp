@@ -13,7 +13,7 @@ class SubtitleReader {
 private:
 	const string _filename;
 	Subtitle* _subtitles;
-	unsigned _count;
+	int _count;
 	void _readSMI();
 	void _preprocess(const string& text, string& processed);
 public:
@@ -21,8 +21,8 @@ public:
 	SubtitleReader(const string& filename);
 	const string& get_file_extension();
 	void read(const string& filename);
-	unsigned count();
-	const Subtitle& get(unsigned idx);
+	int count();
+	const Subtitle& get(int idx);
 	void print();
 	void print(const Subtitle& subtitle);
 };

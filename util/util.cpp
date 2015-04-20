@@ -1,11 +1,13 @@
 #include <cassert>
 #include <ctime>
+#include <iostream>
 #include <boost/random.hpp>
 #include "util.hpp"
+using namespace std;
 
 void util::randsample(int n, int k, int** list, int seed) {
 	assert(n >= k);
-	bool* chk = (bool *) malloc(sizeof(bool) * k);
+	bool chk[n]; for (int i = 0; i < n; i++) chk[i] = 0;
 	std::time_t now = std::time(0);
 	if (0 > seed) seed = (int) now;
   for (size_t i = 0; i < k; i++) {
@@ -26,7 +28,6 @@ void util::randsample(int n, int k, int** list, int seed) {
   	chk[x] = 1;
   	*(*list + i) = x;
   }
-  free(chk);
 }
 
 // int main(int argc, char** arg) {

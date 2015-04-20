@@ -30,7 +30,7 @@ void SubtitleReader::_readSMI() {
 	bool flag = false;
 
 	if (myfile.is_open()) {
-		unsigned count = 0;
+		int count = 0;
 		while (getline(myfile, line)) {
 			if (boost::regex_search(line, m, e)) {
 				count++;
@@ -41,7 +41,7 @@ void SubtitleReader::_readSMI() {
 
 		myfile.clear(); // clear the error flags
 		myfile.seekg(0); // reset to beginning
-		unsigned idx = 0;
+		int idx = 0;
 		while (getline(myfile, line)) {
 			if (boost::regex_search(line, m, e)) {
 				flag = true;
@@ -70,11 +70,11 @@ void SubtitleReader::_preprocess(const string& text, string& processed) {
 	processed = boost::regex_replace(text, e, " ");
 }
 
-unsigned SubtitleReader::count() {
+int SubtitleReader::count() {
 	return this->_count;
 }
 
-const Subtitle& SubtitleReader::get(unsigned idx) {
+const Subtitle& SubtitleReader::get(int idx) {
 	return this->_subtitles[idx];
 }
 

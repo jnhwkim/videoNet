@@ -15,9 +15,9 @@ public:
 	~MediaReader();
 	MediaReader(const cv::string& filename);
 	cv::VideoCapture& operator>>(cv::Mat& image);
-	void getFrame(unsigned idx, cv::Mat& image);
-	const Subtitle& getSubtitle(unsigned idx) const;
-	unsigned getSubtitleCount() const;
+	void getFrame(int idx, cv::Mat& image);
+	const Subtitle& getSubtitle(int idx) const;
+	int getSubtitleCount() const;
 	const string& get_file_extension();
 	const string get_subtitles();
 };

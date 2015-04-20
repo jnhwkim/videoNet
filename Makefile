@@ -121,7 +121,7 @@ UBUNTU = $(shell lsb_release -i -s 2>/dev/null | grep -i ubuntu)
 # OpenGL specific libraries
 ifeq ($(TARGET_OS),darwin)
  # Mac OSX specific libraries and paths to include
- LIBRARIES +=-lopencv_core -lopencv_highgui -lopencv_imgproc -lopencv_features2d -lboost_regex
+ LIBRARIES +=-lopencv_core -lopencv_highgui -lopencv_imgproc -lopencv_features2d -lboost_regex -lopencv_nonfree
 else
  LIBRARIES += 
 endif
@@ -226,13 +226,16 @@ $(PTX_FILE): NV12ToARGB_drvapi.cu
 	$(EXEC) mkdir -p ./bin/$(TARGET_ARCH)/$(TARGET_OS)/$(BUILD_TYPE)
 	$(EXEC) cp -f $@ ./bin/$(TARGET_ARCH)/$(TARGET_OS)/$(BUILD_TYPE)
 
-MediaReader.o: MediaReader.cpp
+util/util.o: util/util.cpp
+	$(EXEC) $(NVCC) $(INCLUDES) $(ALL_CCFLAGS) $(GENCODE_FLAGS) -o $@ -c $<
+
+MediaReader.o: MediaReader.cpp util/util.o
 	$(EXEC) $(NVCC) $(INCLUDES) $(ALL_CCFLAGS) $(GENCODE_FLAGS) -o $@ -c $<
 
 SubtitleReader.o: SubtitleReader.cpp
 	$(EXEC) $(NVCC) $(INCLUDES) $(ALL_CCFLAGS) $(GENCODE_FLAGS) -o $@ -c $<
 
-videoNet: SubtitleReader.o MediaReader.o
+videoNet: SubtitleReader.o MediaReader.o util/util.o
 	$(EXEC) $(NVCC) $(ALL_LDFLAGS) $(GENCODE_FLAGS) -o $@ $+ $(LIBRARIES)
 	$(EXEC) mkdir -p ./bin/$(TARGET_ARCH)/$(TARGET_OS)/$(BUILD_TYPE)
 	$(EXEC) cp $@ ./bin/$(TARGET_ARCH)/$(TARGET_OS)/$(BUILD_TYPE)
