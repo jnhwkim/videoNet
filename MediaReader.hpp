@@ -24,7 +24,7 @@ public:
 	int get_subtitle_count() const;
 	const string& get_file_extension();
 	const string get_subtitles();
-	void get_kmean_descriptor(DetectorType TYPE, int k, int samples_per_frame, cv::Mat& centroids);
+	void get_kmean_descriptor(DetectorType TYPE, int K, int samples_per_frame, cv::Mat& centroids);
 };
 
 #endif /* MEDIA_READER_H_ */
