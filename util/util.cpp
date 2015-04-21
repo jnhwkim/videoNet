@@ -1,7 +1,8 @@
 #include <cassert>
 #include <ctime>
-#include <iostream>
+#include <fstream>
 #include <boost/random.hpp>
+#include <opencv2/opencv.hpp>
 #include "util.hpp"
 using namespace std;
 
@@ -27,6 +28,15 @@ void util::randsample(int n, int k, int** list, int seed) {
   	}
   	chk[x] = 1;
   	*(*list + i) = x;
+  }
+}
+
+bool util::exist(const std::string& name, E_TYPE TYPE) {
+  switch(TYPE) {
+  case E_FILE:
+  default:
+    std::fstream fs(name.c_str(), std::fstream::in);
+    return fs.good();
   }
 }
 

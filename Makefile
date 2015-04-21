@@ -121,7 +121,7 @@ UBUNTU = $(shell lsb_release -i -s 2>/dev/null | grep -i ubuntu)
 # OpenGL specific libraries
 ifeq ($(TARGET_OS),darwin)
  # Mac OSX specific libraries and paths to include
- LIBRARIES +=-lopencv_core -lopencv_highgui -lopencv_imgproc -lopencv_features2d -lboost_regex -lopencv_nonfree
+ LIBRARIES +=-lopencv_core -lopencv_highgui -lopencv_imgproc -lopencv_features2d -lboost_regex -lopencv_nonfree -lopencv_flann
 else
  LIBRARIES += 
 endif
@@ -244,7 +244,7 @@ run: build
 	$(EXEC) ./videoNet
 
 clean:
-	rm -f videoNet SubtitleReader.o MediaReader.o  data/$(PTX_FILE) $(PTX_FILE)
+	rm -f videoNet SubtitleReader.o MediaReader.o util/util.o data/$(PTX_FILE) $(PTX_FILE)
 	rm -rf ./bin/$(TARGET_ARCH)/$(TARGET_OS)/$(BUILD_TYPE)/videoNet
 	rm -rf ./bin/$(TARGET_ARCH)/$(TARGET_OS)/$(BUILD_TYPE)/$(PTX_FILE)
 
