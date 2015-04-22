@@ -54,7 +54,7 @@ public:
 	HEdge(int M, int nz, int* i, int* j, bool* val, float* w);
 	void init();
 	void init(int M, int nz, int* i, int* j, bool* val);
-	void get_edge(int idx, int** j_ptr, bool** val_ptr, int* order) const;
+	void get_edge(int idx, int** j_ptr, bool** val_ptr, int* degree) const;
 	int get_edge_order(int idx) const;
 	float get_weight(int idx) const;
 	void merge(HE_WEIGHT_UPDATE RULE, HEdge& edge);
@@ -67,10 +67,8 @@ public:
 	// various sampler
 	#define VERTEX_WORD 0
 	#define VERTEX_FEAT	100000000
-	void sample_edge(HE_SAMPLING METHOD, int order, 
-		WordDic& dic, WordDic& alldic);
-	void sample_edge(HE_SAMPLING METHOD, int order, 
-		FeatDic& dic, FeatDic& alldic);
+	void sample_edge(HE_SAMPLING METHOD, int degree, WordDic& dic, WordDic& alldic);
+	void sample_edge(HE_SAMPLING METHOD, int degree, FeatDic& dic, FeatDic& alldic);
 };
 
 #endif /* HEdge_H_ */
