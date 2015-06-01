@@ -86,11 +86,36 @@
 
 Xu et al.\cite{Xu2015}의 연구에서는 이미지 안의 여러 독립 객체들과 문장과의 관계를 자연어 언어 모델 안에서 동적으로 학습하는 모델을 제안하였다. 자연어 언어 모델 학습에 좋은 성능 보이고 있는 순환 네트워크의 일종인 LSTM 모델에서 은닉 상태에 따라 주어진 이미지의 콘볼루션(convolution) 시각 특징 벡터 일부를 공간 상에서 선택, 순환 학습함으로써 주의 모델 기반 조건화 LSTM을 구현하였다. 변분 베이지안(variational Bayesian) 방법에서 변분 최소 경계(variational lower bound)를 최대화하는 새로운 목적 함수를 정의하고, 이 새로운 목적 함수에 적용 가능한 몬테 카를로(Monte Carlo) 샘플링을 이용하여 비용 함수의 경사도를 계산하기 때문에 일반적인 역전파(back-propagation) 알고리즘을 통해 LSTM과 신경망 네트워크인 주의 모델을 일관된 방법으로 두 모듈을 동시에 학습할 수 있다.
 
-하지만 기존 연구는 정적 이미지에 대한 기술적 문장을 생성하도록 학습하기 때문에, 만화 영상과 같이 시간의 흐름에 따라 문맥이 달라질 수 있는 데이터에는 적합하지 않다. 예를 들면 동일한 두 캐릭터가 대화를 나누는 같은 장면도 앞에서 무슨 행동이나 대화를 나누었냐에 따라 문맥이 달라지며 해당 장면에 대한 대사가 달라질 것이다. 따라서 우리는 기술적으로 기존 연구에서 두 가지 요소를 변경하여 문제를 해결하고자 한다. 첫 번째는 LSTM의 메모리 벡터 $c_0$와 은닉 벡터 $h_0$를 새로운 이미지에 따라 초기화 하지 않고 보존한다. 두 번째는 주의 모델 $f_att$를 랜덤 파라미터로 초기화하는 대신 한 시간 분량의 비슷하지만 서로 다른 영상을 본 다수 사람들의 시선 분포 정보를 이용하여 파라미터 값을 초기화 함으로써 선택적 학습을 가속화 하고자 한다.  
+하지만 기존 연구는 정적 이미지에 대한 기술적 문장을 생성하도록 학습하기 때문에, 만화 영상과 같이 시간의 흐름에 따라 문맥이 달라질 수 있는 데이터에는 적합하지 않다. 예를 들면 동일한 두 캐릭터가 대화를 나누는 같은 장면도 앞에서 무슨 행동이나 대화를 나누었냐에 따라 문맥이 달라지며 해당 장면에 대한 대사가 달라질 것이다. 따라서 우리는 기술적으로 기존 연구에서 두 가지 요소를 변경하여 문제를 해결하고자 한다. 첫 번째는 LSTM의 메모리 벡터 $c_0$와 은닉 벡터 $h_0$를 새로운 이미지에 따라 초기화 하지 않고 보존한다. 두 번째는 주의 모델 $f_{att}$를 랜덤 파라미터로 초기화하는 대신 한 시간 분량의 비슷하지만 서로 다른 영상을 본 다수 사람들의 시선 분포 정보를 이용하여 파라미터 값을 초기화 함으로써 선택적 학습을 가속화 하고자 한다.  
 
 따라서 본 연구는 입력 이미지들이 시간 축 상에서 문맥적 흐름을 가질 때 한 단어와 이미지의 한 영역의 대응 관계는 문맥에 따라 달라질 수 있다는 가정으로 선행 연구를 확장한다. 이 때 입력 이미지 내 독립 객체들의 상호 작용이 문맥 조건에 따라 달라지고 문장 내의 단어들과의 상호 작용도 더욱 동적으로 일어난다. 
 
 \section{Attentional LSTM}
+
+LSTM 모델은 입력 벡터의 일부가 출력되는 재귀적인 구조를 가진다. $t-1$ 시간에서의 출력 벡터 $y_{t-1} \in \mathbb{R}^K$의 선형 사영값 $Ey_{t-1} \in \mathbb{R}^m$와 은닉 벡터 $h_{t-1} \in \mathbb{R}^n$, 그리고 $t$ 시간에서의 문맥 벡터 $\hat{z}_t \in \mathbb{R}^D$를 입력하면 $t$ 시간에서의 은닉 벡터 $h_t$를 출력한다. 여기에서 $y$는 단어를 나타내는 비트 지시 벡터(해당 단어 인덱스가 1이고 나머지는 0인 벡터)이고 $h$는 LSTM의 학습 파라미터 벡터, $\hat{z}$은 주의 모델 $f_{att}$의 출력 값이다. LSTM 모델에서 정규화 방법을 제안한 Zaremba et al.\cite{Zaremba2015}의 방법에 따라 LSTM을 구현하면 다음과 같이 표현할 수 있다.
+
+\begin{equation}
+\begin{pmatrix}i_{t}\\f_{t}\\o_{t}\\g_{t}\end{pmatrix} =
+  \begin{pmatrix}\mathrm{\sigma}\\\mathrm{\sigma}\\\mathrm{\sigma}\\\tanh\end{pmatrix}
+  T
+  \begin{pmatrix}Ey_{t-1}\\h_{t-1}\\\hat{z}_t\end{pmatrix}
+\end{equation}
+
+\begin{equation}
+c_t = f_t \odot c_{t-1} + i_t \odot g_t\\
+\end{equation}
+\begin{equation}
+\label{eq3}
+h_t = o_t \odot \tanh(c_t)\\
+\end{equation}
+
+$E \in \mathbb{R}^{m \times K}$는 단어를 나타내는 비트 지시 벡터를 실수값으로 선형 사영한다.  $T \in \mathbb{R}^{D+m+n \times n}$는 LSTM의 내부 파라미터 행렬이다. $E$와 $T$는 연쇄 법칙에 따라 목적 함수에 의해 역전파 알고리즘으로 학습되는 파라미터 행렬이다. 수식\ref{eq3}에 따라 $h_t$를 구한다면 다음 식을 이용하여 $y_t$를 구할 수 있게 된다.
+
+\begin{equation}
+p(y_t|y^{t-1}_1,a) \propto \exp{L_o(Ey_{t-1} + L_{h}h_t + L_{z}\hat{z}_t))}
+\end{equation}
+
+여기에서 $L_{o} \in \mathbb{R}^{K \times m}$, $L_{h} \in \mathbb{R}^{m \times n}$, $L_{z} \in \mathbb{R}^{m \times D}$는 모두 목적 함수에 의해 학습되는 파라미터 행렬이다.
 
 \begin{figure*}
   \centerline{\includegraphics[width=180mm,height=54mm]{eps/ha2015_fig2.png}}
@@ -98,9 +123,9 @@ Xu et al.\cite{Xu2015}의 연구에서는 이미지 안의 여러 독립 객체�
   \label{fig:ha2015}
 \end{figure*}
 
-DHC 모델은 점진적으로 들어오는 데이터를 그래프 몬테 카를로 방법한 샘플링 방법으로 데이터와 더불어 점진적으로 하이퍼그래프를 구축한다. $G^{*}$를 최적의 하이퍼그래프라고 둘 때 베이지안 법칙에 의하여 아래과 같이 표현될 수 있다.
 
-\begin{equation} \label{eq1}
+
+\begin{equation} 
 \begin{split}
 G^{*} & = \argmax_{G_{t}} P(G_{t}|D) \\
       & = \argmax_{G_{t}} P(D|G_{t})P(G_{t-1}) \\
@@ -109,7 +134,7 @@ G^{*} & = \argmax_{G_{t}} P(G_{t}|D) \\
 
 이 모델은 각 영상 이미지에 등장하는 캐릭터를 나타내는 지표 벡터 $y \in \mathds{R}^{|c2|}$를 이용하여 지도 학습을 하게 된다. 형식적으로 아래와 같이 관찰된 데이터와 캐릭터 지표 벡터를 통해 하이퍼그래프를 구성한다.
 
-\begin{equation} \label{eq2}
+\begin{equation}
 \begin{split}
 P(G|D,y) & = \frac{P(D|G,y) P(y|G) P_{t-1}(G)} {P(D,y)} \\
 \end{split}
@@ -124,7 +149,7 @@ P(G|D,y) & = \frac{P(D|G,y) P(y|G) P_{t-1}(G)} {P(D,y)} \\
 
 다수 사람의 시선 분포 정보는 모든 데이터 입력에 대한 값을 실험적으로 가지는 것은 비효율적이므로 컨볼루션 신경망(Convolutional Neural Networks)을 이용하여 입력 이미지 $\mathcal{I}$에 대한 분포 추정 값 $\hat{\pi}$을 관찰된 시선 분포 $\pi$를 통해 얻는다. 여기서 컨볼루션 신경망의 마지막 층은 분포에 대한 오차를 에러 함수로 정의한 후 파라미터 값들을 어렵지 않게 학습할 수 있다. $\hat{\pi}$를 이용한 아래의 수식은 기존 연구의 그래프 몬테 카를로 방법으로 치환하게 된다.
 
-\begin{equation} \label{eq3}
+\begin{equation} 
 \begin{split}
 P(v_{i}) & = \frac{\exp(\hat{\pi}(pos(v_{i})) \cdot w_{i} \cdot log(R(d(v_{i}))))}{Z}
 \end{split}
